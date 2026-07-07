@@ -5,13 +5,18 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.cache/
 .venv/
 venv/
+.env
+*.env
 
 # Build artifacts
 build/
 dist/
 *.whl
+*.zip
+*.tar.gz
 
 # InstSci runtime artifacts
 runs/
@@ -19,6 +24,10 @@ downloads/
 .instsci/
 instsci/_browsers/
 *.pdf
+*.log
+*.db
+*.sqlite
+*.sqlite3
 cookies.json
 carsi_cookies/
 chrome-profile/

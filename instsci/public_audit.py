@@ -133,24 +133,40 @@ def audit_public_package(path: str | Path, *, include_institution_scan: bool = T
     files = _iter_files(root)
     for file_path in files:
         rel = _relative(root, file_path)
+        suffix = file_path.suffix.lower()
+        name = file_path.name.lower()
         if "__pycache__" in file_path.parts:
             issues.append(AuditIssue("python_cache_dir", rel, 0, "Package contains __pycache__."))
-        if file_path.suffix.lower() in {".pyc", ".pyo"}:
+        if suffix in {".pyc", ".pyo"}:
             issues.append(AuditIssue("python_bytecode", rel, 0, "Package contains compiled Python bytecode."))
+        if suffix == ".pdf":
+            issues.append(AuditIssue("pdf_output_included", rel, 0, "Public package should omit downloaded PDF outputs."))
+        if suffix in {".zip", ".whl", ".tar", ".gz"}:
+            issues.append(AuditIssue("binary_package_included", rel, 0, "Public repository should not include generated packages."))
+        if suffix in {".db", ".sqlite", ".sqlite3"}:
+            issues.append(AuditIssue("local_database_included", rel, 0, "Public package should omit local databases."))
+        if suffix == ".log":
+            issues.append(AuditIssue("local_log_included", rel, 0, "Public package should omit local logs."))
+        if name in {".env", "cookies.json"} or name.endswith(".env"):
+            issues.append(AuditIssue("local_secret_or_session_file", rel, 0, "Public package should omit env, cookie, and session files."))
 
-    if (root / "source_patched" / "tests").exists():
-        issues.append(
-            AuditIssue(
-                "root_historical_tests_included",
-                "source_patched/tests",
-                0,
-                "Public package should omit root-level historical tests; keep focused package tests only.",
-            )
-        )
-    if (root / "source_patched" / "build").exists():
-        issues.append(AuditIssue("build_tree_included", "source_patched/build", 0, "Public package should omit build trees."))
-    if (root / "source_patched" / "runs").exists():
-        issues.append(AuditIssue("run_outputs_included", "source_patched/runs", 0, "Public package should omit run outputs."))
+    forbidden_dirs = {
+        "source_patched/tests": "root_historical_tests_included",
+        "source_patched/build": "build_tree_included",
+        "source_patched/runs": "run_outputs_included",
+        "runs": "run_outputs_included",
+        "downloads": "download_outputs_included",
+        "build": "build_tree_included",
+        "dist": "build_tree_included",
+        "instsci/_browsers": "browser_runtime_included",
+        "carsi_cookies": "cookie_store_included",
+        "chrome-profile": "browser_profile_included",
+        "worker-profiles": "browser_profile_included",
+        ".cache": "local_cache_included",
+    }
+    for rel_dir, code in forbidden_dirs.items():
+        if (root / rel_dir).exists():
+            issues.append(AuditIssue(code, rel_dir, 0, "Public package should omit local runtime artifacts."))
 
     patterns = SENSITIVE_PATTERNS + (PUBLIC_INSTITUTION_PATTERNS if include_institution_scan else ())
     for file_path in files:

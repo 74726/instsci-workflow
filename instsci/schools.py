@@ -4,7 +4,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-_DEFAULT_KEY = b"wrdvpnisthebest!"
+_DEFAULT_KEY = b""
 WEBVPN_DEFAULT_KEY = _DEFAULT_KEY  # Public alias for CLI display
 
 _DATA_FILE = Path(__file__).parent / "data" / "webvpn.json"

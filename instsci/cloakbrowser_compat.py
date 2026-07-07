@@ -35,9 +35,13 @@ def configure_builtin_cloakbrowser(
     return target
 
 
-def prepare_cloakbrowser_runtime(config_module: Any | None = None) -> Path:
+def prepare_cloakbrowser_runtime(
+    config_module: Any | None = None,
+    *,
+    create_dir: bool = False,
+) -> Path:
     """Configure InstSci's CloakBrowser runtime before importing launch APIs."""
-    cache_dir = configure_builtin_cloakbrowser()
+    cache_dir = configure_builtin_cloakbrowser(create_dir=create_dir)
     ensure_cloakbrowser_platform_compatible(config_module)
     return cache_dir
 

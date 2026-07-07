@@ -27,8 +27,9 @@ logger = logging.getLogger(__name__)
 # URL used to test if institutional access session is valid.
 TEST_URL = "https://www.nature.com"
 
-# Default campus gateway encryption key (same for both AES key and IV).
-WEBVPN_DEFAULT_KEY = b"wrdvpnisthebest!"
+# Campus gateway encryption defaults are institution-specific.
+# Keep the public build empty unless a configured school entry supplies a key.
+WEBVPN_DEFAULT_KEY = b""
 
 
 class WebVPNAuth:
@@ -111,6 +112,10 @@ class WebVPNAuth:
 
         if not hostname:
             return url
+        if not self._webvpn_base:
+            raise ValueError("WebVPN base URL is not configured.")
+        if not self._encrypt_key or not self._encrypt_iv:
+            raise ValueError("WebVPN encryption key is not configured for this institution.")
 
         # Encrypt hostname with AES-CFB
         cipher = AES.new(self._encrypt_key, AES.MODE_CFB, self._encrypt_iv, segment_size=128)
