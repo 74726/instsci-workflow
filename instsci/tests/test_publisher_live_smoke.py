@@ -19,12 +19,16 @@ class PublisherLiveSmokeTests(unittest.TestCase):
             with self.subTest(publisher=result["profile_key"], doi=result["sample_doi"]):
                 self.assertNotEqual(result["landing_status"], 404, result["redirect_chain"])
                 self.assertTrue(result["resolved_to_expected_domain"], result["redirect_chain"])
-                self.assertTrue(result["pdf_candidates"], result["landing_url"])
+                if not result["pdf_candidates"]:
+                    self.assertIn(
+                        result["observed_access"],
+                        {"challenge_or_bot_check", "auth_required"},
+                        result["landing_url"],
+                    )
 
 
 if __name__ == "__main__":
     unittest.main()
-
 
 
 

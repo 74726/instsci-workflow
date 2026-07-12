@@ -80,6 +80,11 @@ Recommended environment:
 - Your own legal institutional access when closed-access papers are involved.
 - Optional: Zotero Desktop for long-term paper and PDF management.
 
+The first visible publisher-browser run downloads CloakBrowser's Chromium
+runtime (currently about 535 MB). InstSci stores this mutable runtime outside
+the source tree at `~/.instsci/browsers/cloakbrowser`; set
+`INSTSCI_CLOAKBROWSER_CACHE_DIR` when a different cache location is required.
+
 For Elsevier and ScienceDirect retrieval, the Elsevier API key is a project-wide global setting. Configure it once with `instsci elsevier-setup --api-key YOUR_KEY --validate`. Inst Token is optional and should only be configured when your library explicitly provides one. The preferred retrieval route is `view=FULL XML -> object/eid -> PDF`.
 
 ## First Run
