@@ -167,6 +167,9 @@ def audit_public_package(path: str | Path, *, include_institution_scan: bool = T
         "chrome-profile": "browser_profile_included",
         "worker-profiles": "browser_profile_included",
         ".cache": "local_cache_included",
+        "private-evidence": "private_evidence_included",
+        "private_evidence": "private_evidence_included",
+        "instsci/data/private": "private_evidence_included",
     }
     for rel_dir, code in forbidden_dirs.items():
         if (root / rel_dir).exists():
@@ -174,6 +177,15 @@ def audit_public_package(path: str | Path, *, include_institution_scan: bool = T
 
     patterns = SENSITIVE_PATTERNS + (PUBLIC_INSTITUTION_PATTERNS if include_institution_scan else ())
     for file_path in files:
+        if file_path.name.lower().endswith(".private.json"):
+            issues.append(
+                AuditIssue(
+                    "private_evidence_included",
+                    _relative(root, file_path),
+                    0,
+                    "Private evidence JSON must stay outside the public package.",
+                )
+            )
         issues.extend(_scan_text_file(root, file_path, patterns))
 
     return _audit_payload(root, files, issues)

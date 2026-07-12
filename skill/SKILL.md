@@ -138,6 +138,19 @@ instsci publisher-doctor --matrix
 
 Use this panel to decide whether to run a normal batch, run a single-DOI prewarm first, switch to a manual browser check, retry later, or avoid a bulk run. For final publisher PDF verdicts, still use the visible CloakBrowser-backed workflow.
 
+## Public and Private Evidence
+
+Treat `instsci/data/*.json` as distributable route knowledge or anonymized
+planning summaries only. Keep institution-specific screenshots, subscription
+observations, run paths, cookies, and browser state outside the repository.
+
+Use `instsci evidence policy` to inspect the boundary. When a private run needs
+long-term traceability, use `instsci evidence register RUN_DIR`; this creates a
+reference-only entry under `~/.instsci/private-evidence` with a manifest hash and
+does not copy PDFs, screenshots, cookies, or browser profiles. Never publish the
+private index. Any proposed public summary must be separately anonymized and pass
+`instsci public-audit`.
+
 ## Detailed Reference
 
 For recent gotchas, publisher-specific notes, visible-browser UI fallback steps, report-count rules, and verification commands, read `references/publisher-pdf-workflow.md` when the task touches publisher PDFs or DOI batches.

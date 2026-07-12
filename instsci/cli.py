@@ -47,6 +47,8 @@ jobs_app = typer.Typer(help="Manage long-running InstSci browser jobs.", no_args
 app.add_typer(jobs_app, name="jobs")
 zotero_app = typer.Typer(help="Prepare Zotero MCP import handoffs.", no_args_is_help=True)
 app.add_typer(zotero_app, name="zotero")
+evidence_app = typer.Typer(help="Manage the external private-evidence index.", no_args_is_help=True)
+app.add_typer(evidence_app, name="evidence")
 console = Console()
 
 
@@ -3149,6 +3151,76 @@ def identity_policy(
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(json.dumps(policy, ensure_ascii=False, indent=2), encoding="utf-8")
         console.print(f"[dim]Report: {output_path}[/dim]")
+
+
+@evidence_app.command("policy")
+def evidence_policy(
+    format: str = typer.Option("text", "--format", help="Output format: text or json."),
+):
+    """Show which data belongs in the public package and private evidence index."""
+    from .evidence_store import load_public_data_policy, private_evidence_root
+
+    policy = load_public_data_policy()
+    cfg = Config.load()
+    payload = {**policy, "private_evidence_root": str(private_evidence_root(cfg))}
+    if format.lower() == "json":
+        console.print_json(data=payload)
+        return
+    if format.lower() != "text":
+        console.print("[red]--format must be text or json.[/red]")
+        raise typer.Exit(2)
+    console.print("[bold]Public assets[/bold]")
+    for name in payload["public_assets"]:
+        console.print(f"  - {name}")
+    console.print(f"[bold]Private evidence root:[/bold] {payload['private_evidence_root']}")
+    console.print("[yellow]Private index is reference-only; PDFs, cookies, and browser profiles are not copied.[/yellow]")
+
+
+@evidence_app.command("register")
+def evidence_register(
+    run_dir: Path = typer.Argument(help="Existing private InstSci run directory."),
+    publisher: str = typer.Option("", "--publisher", "-p", help="Optional publisher key."),
+    private_comment: str = typer.Option("", "--private-comment", help="Optional private operator comment."),
+):
+    """Register a private run by path and manifest hash without copying artifacts."""
+    from .evidence_store import register_private_run
+
+    try:
+        entry = register_private_run(Config.load(), run_dir, publisher=publisher, notes=private_comment)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        console.print(f"[red]Could not register private evidence: {exc}[/red]")
+        raise typer.Exit(2)
+    console.print(f"[green]Registered private evidence:[/green] {entry['id']}")
+    console.print(f"[dim]Index: {entry['index_path']}[/dim]")
+
+
+@evidence_app.command("list")
+def evidence_list(
+    format: str = typer.Option("table", "--format", help="Output format: table or json."),
+):
+    """List references in the external private-evidence index."""
+    from .evidence_store import load_private_index
+
+    payload = load_private_index(Config.load())
+    if format.lower() == "json":
+        console.print_json(data=payload)
+        return
+    if format.lower() != "table":
+        console.print("[red]--format must be table or json.[/red]")
+        raise typer.Exit(2)
+    table = Table(title=f"Private Evidence Runs ({len(payload['runs'])})")
+    table.add_column("ID")
+    table.add_column("Publisher")
+    table.add_column("Registered")
+    table.add_column("Manifest SHA-256", max_width=18)
+    for entry in payload["runs"]:
+        table.add_row(
+            str(entry.get("id") or ""),
+            str(entry.get("publisher") or ""),
+            str(entry.get("registered_at") or ""),
+            str(entry.get("manifest_sha256") or "")[:16],
+        )
+    console.print(table)
 
 
 @app.command()

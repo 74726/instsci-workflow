@@ -130,6 +130,27 @@ By default, Zotero sync only includes successful rows with an existing PDF. Proc
 
 This pairs well with local attachment-management tools such as Zotero Attanger, because the InstSci manifest keeps the original PDF path and Zotero becomes the long-term literature interface.
 
+## Public Data and Private Evidence
+
+The repository ships public route knowledge and anonymized planning summaries in
+`instsci/data`. Institution-specific browser results, screenshots, local paths,
+subscription observations, cookies, and browser profiles do not belong in the
+public package.
+
+Register a private run in the external reference-only index when it needs to be
+tracked beyond its task archive:
+
+```powershell
+instsci evidence policy
+instsci evidence register ..\..\runtime\runs\example_run --publisher elsevier
+instsci evidence list
+```
+
+The default index is `~/.instsci/private-evidence/index.json`. Registration
+stores the original run path and manifest SHA-256; it does not copy PDFs,
+screenshots, cookies, or browser profiles. `public-audit` rejects private-evidence
+directories and `*.private.json` files inside a public package.
+
 ## Review Checks
 
 ```powershell
@@ -142,8 +163,8 @@ python -B -m instsci.cli doctor --full --package-path .
 
 Current package validation before publication:
 
-- Python compile: 73/73 files passed.
-- Unit and regression tests: 296/296 passed (`1` live publisher smoke test skipped unless explicitly enabled).
+- Python compile: 75/75 files passed.
+- Unit and regression tests: 299/299 passed (`1` live publisher smoke test skipped unless explicitly enabled).
 - Public package audit: passed.
 - Zip hygiene scan: passed.
 - Institution-specific residue scan: passed.
