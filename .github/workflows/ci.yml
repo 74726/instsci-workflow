@@ -29,6 +29,17 @@ jobs:
       - name: Run unit and regression tests
         run: python -B -m unittest discover -s instsci/tests -v
 
+      - name: Remove installer build tree before source audit
+        run: |
+          $workspace = [IO.Path]::GetFullPath((Get-Location).Path).TrimEnd('\')
+          $buildDir = [IO.Path]::GetFullPath((Join-Path $workspace 'build'))
+          if (-not $buildDir.StartsWith($workspace + '\', [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Refusing to remove a build directory outside the workspace: $buildDir"
+          }
+          if (Test-Path -LiteralPath $buildDir) {
+            Remove-Item -LiteralPath $buildDir -Recurse -Force
+          }
+
       - name: Audit public repository
         run: python -B -m instsci.cli public-audit .
 
