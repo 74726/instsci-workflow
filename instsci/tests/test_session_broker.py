@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
+from click import unstyle
 from typer.testing import CliRunner
 
 from instsci import job_store
@@ -201,10 +202,11 @@ class SessionBrokerTests(unittest.TestCase):
 
     def test_papers_institution_help_does_not_default_to_example(self):
         result = CliRunner().invoke(app, ["papers", "--help"])
+        output = unstyle(result.output)
 
         self.assertEqual(result.exit_code, 0, result.output)
-        self.assertIn("--institution", result.output)
-        self.assertNotIn("Example University", result.output)
+        self.assertIn("--institution", output)
+        self.assertNotIn("Example University", output)
 
     def test_session_broker_state_command_reports_running_broker(self):
         runner = CliRunner()
